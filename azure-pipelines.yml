@@ -1,0 +1,31 @@
+#Demo Spring application
+
+trigger:
+ branches:
+    include:
+      - master
+pr:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: 'BuildArtifact'
+    displayName: ' Building Artifact'
+    jobs:
+      - job: 'BuildArtifact'
+        displayName: 'Building Artifact'
+        steps:
+        - template: '$(agent.builddirectory)/s/cicd/stages/build_stage.yml'
+
+  - stage: 'Dockerize'
+    displayName: 'Create Docker Image'
+    condition: and(succeeded(),ne(variables['Build.Reason'],'PullRequest'))
+    jobs:
+      - job: 'CreateDockerImage'
+        displayName: 'Build and Publish Docker Image'
+        steps:
+        - template: '$(agent.builddirectory)/s/cicd/stages/dockerise_stage.yml'
